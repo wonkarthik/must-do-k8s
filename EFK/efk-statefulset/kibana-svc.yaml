@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-svc
+  labels:
+    app=kibana
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  NodePort: 30005
+  selector:
+    app=kibana

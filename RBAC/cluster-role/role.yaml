@@ -1,0 +1,24 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test
+  name: netapp-k8s
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods", "services", "nodes"]
+  verbs: ["get", "watch", "list"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: netapp-k8s-ro
+  namespace: test 
+subjects:
+- kind: User
+  name: netapp # Name is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: netapp-k8s # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io

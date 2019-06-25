@@ -1,0 +1,73 @@
+
+Installing prometheus and grafana by Helm 
+
+
+creating the serviemonitor
+
+
+
+$ helm install stable/prometheus-operator --name prometheus-operator --namespace monitoring
+$ kubectl get pods  -n monitoring
+
+Note: if you face any issue with CRD makes changes in values.yaml to  createCustomResource: false
+
+# helm fetch --untar stable/prometheus-operator
+# helm install -f values.yaml stable/prometheus-operator --name prometheus-operator --namespace monitoring 
+=================================================================================================================
+Prometheus  
+=================================================================================================================
+Forward the Prometheus server to your machine so you can take a better look at the dashboard by opening <ip>:9090
+
+$ kubectl port-forward -n monitoring prometheus-prometheus-operator-prometheus-0 9090
+
+or 
+$ kubectl get svc 
+root@kube-master monitoring]# kubectl get svc
+NAME                                           TYPE        CLUSTER-IP      EXTERNAL-IP                       PORT(S)             AGE
+alertmanager-operated                          ClusterIP   None            <none>                            9093/TCP,6783/TCP   48m
+prometheus-operated                            ClusterIP   None            <none>                            9090/TCP            48m
+prometheus-operator-alertmanager               NodePort    10.102.22.81    <none>                            9093:31532/TCP      48m
+prometheus-operator-grafana                    NodePort    10.108.15.178   <none>                            80:32471/TCP        48m
+prometheus-operator-kube-state-metrics         ClusterIP   10.109.47.75    <none>                            8080/TCP            48m
+prometheus-operator-operator                   ClusterIP   None            <none>                            8080/TCP            48m
+prometheus-operator-prometheus                 NodePort    10.107.49.206   <none>                            9090:31507/TCP      48m
+prometheus-operator-prometheus-node-exporter   ClusterIP   10.100.180.59   <none>                            9100/TCP            48m
+results                                        NodePort    10.98.193.47    206.189.150.190,206.189.150.192   81:30010/TCP        4d6h
+vote                                           NodePort    10.106.78.82    206.189.150.190,206.189.150.192   82:30000/TCP        4d6h
+[root@kube-master monitoring]# 
+
+# kubectl get pods -o wide --show-labels
+# kubectl apply -f prometheus-service.yaml
+
+or  
+$ kubectl edit svc prometheus-operator-prometheus -o yaml 
+change ClusterIP to NodePort
+
+=========================================================================================
+For grafana 
+==========================================================================================
+default login cred: admin/prom-operator
+
+$ kubectl port-forward $(kubectl get  pods --selector=app=grafana -n  monitoring --output=jsonpath="{.items..metadata.name}") -n monitoring  3000
+
+or 
+
+# kubectl get pods -o wide --show-labels
+# kubectl apply -f prometheus-service.yaml
+
+or 
+change ClusterIP to NodePort
+$ kubectl edit svc prometheus-operator-grafana -o yaml
+
+
+========================================================================================
+AlertManager:
+========================================================================================
+$ kubectl port-forward -n monitoring alertmanager-prometheus-operator-alertmanager-0 9093
+
+or
+change ClusterIP to NodePort
+
+$ kubectl edit svc prometheus-operator-alertmanager -o yaml
+
+

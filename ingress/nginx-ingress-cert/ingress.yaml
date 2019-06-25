@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hello-kubernetes-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - vote1.example.com
+    - vote2.example.com
+    secretName: letsencrypt-prod
+  rules:
+  - host: vote1.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: hello-kubernetes-first
+          servicePort: 80
+  - host: vote2.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: hello-kubernetes-second
+          servicePort: 80

@@ -1,0 +1,23 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: cluster-node-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes","pods"]
+  verbs: ["get", "watch", "list"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-cluster-nodes
+subjects:
+- kind: User
+  name: netapp # Name is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-node-reader
+  apiGroup: rbac.authorization.k8s.io

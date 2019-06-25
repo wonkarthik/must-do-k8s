@@ -1,0 +1,23 @@
+# traffic splitting
+# With Traefik, users can split Ingress traffic in a controlled manner between multiple deployments using service weights. This feature can be used for canary releases that should initially receive a small but ever-increasing fraction of traffic over time.
+#
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    traefik.ingress.kubernetes.io/service-weights: |
+      animals-app: 99%
+      animals-app-canary: 1%
+  name: animals-app
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: animals-app
+          servicePort: 80
+        path: /
+      - backend:
+          serviceName: animals-app-canary
+          servicePort: 80
+        path: /

@@ -1,0 +1,27 @@
+# You should use the “web” NodePort to access specific sites
+#  Here we reconfigure three frontends to serve under one domain
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: animals
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.rule.type: PathPrefixStrip
+spec:
+  rules:
+  - host: animals.minikube
+    http:
+      paths:
+      - path: /bear
+        backend:
+          serviceName: bear
+          servicePort: http
+      - path: /moose
+        backend:
+          serviceName: moose
+          servicePort: http
+      - path: /hare
+        backend:
+          serviceName: hare
+          servicePort: http

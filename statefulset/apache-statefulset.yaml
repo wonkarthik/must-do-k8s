@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apache-http
+spec:
+  selector:
+    matchLabels:
+      app: httpd
+  serviceName: "httpd-service"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: httpd
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: httpd
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/local/apache2/htdocs
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "fast"
+      resources:
+        requests:
+          storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-service
+  labels:
+    app: httpd
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: httpd
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: fast
+provisioner: k8s.io/minikube-hostpath
+reclaimPolicy: Retain
+
+# Refer: https://supergiant.io/blog/creating-stateful-apps-with-kubernetes-statefulsets/ 

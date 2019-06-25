@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wordpress-persistence-storage
+  labels:
+     type: local
+     app: wordpress
+     tier: frontend
+spec:
+  storageClassName: manual
+  capacity: 
+    storage: 4Gi
+  persistentVolumeReclaimPolicy: Recycle
+  accessModes: 
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/lib/pv1"
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-persistent-storage
+  labels:
+     type: local
+     app: wordpress
+     tier: mysql 
+spec:
+  storageClassName: manual
+  capacity:
+     storage: 2Gi
+  persistentVolumeReclaimPolicy: Recycle
+  accessModes: 
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/lib/pv2" 
+ 
