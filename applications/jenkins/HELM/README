@@ -1,0 +1,15 @@
+Helm: Helm is a tool for managing Kubernetes charts. Charts are packages of pre-configured Kubernetes resources.
+
+First define the PersistentVolume jenkins-pv where the jenkins data to be stored. The hostPath tells the jenkins directory is in /opt/jenkins location
+
+[root@kubernetesmaster1 HELM]# kubectl get pv,pvc
+NAME                          CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                 STORAGECLASS   REASON   AGE
+persistentvolume/jenkins-pv   3Gi        RWO,ROX        Retain           Bound    jenkins/jenkins-pvc   manual                  14m
+
+NAME                                STATUS   VOLUME       CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/jenkins-pvc   Bound    jenkins-pv   3Gi        RWO,ROX        manual         14m
+[root@kubernetesmaster1 HELM]#
+
+[root@kubernetesmaster1 HELM]# helm install --name jenkins --set Persistence.ExistingClaim=jenkins-pvc stable/jenkins
+
+
