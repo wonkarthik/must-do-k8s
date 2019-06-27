@@ -1,0 +1,64 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kong-web-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "kong"
+spec:
+  tls:
+  - hosts:
+    - web.{{ .env }}.yourdomain.com
+    secretName: {{ .env }}-yourdomain-tls
+  rules:
+  - host: web.{{ .env }}.yourdomain.com
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: yourservice-frontend
+          servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kong-no-auth-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "kong"
+spec:
+  tls:
+  - hosts:
+    - api.{{ .env }}.yourdomain.com
+    secretName: {{ .env }}-yourdomain-tls
+  rules:
+  - host: api.{{ .env }}.yourdomain.com
+    http:
+      paths:
+      - path: /api/v1/auth
+        backend:
+          serviceName: auth-service
+          servicePort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kong-api-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "kong"
+    plugins.konghq.com: jwt
+spec:
+  tls:
+  - hosts:
+    - api.{{ .env }}.yourdomain.com
+    secretName: {{ .env }}-yourdomain-tls
+  rules:
+  - host: api.{{ .env }}.yourdomain.com
+    http:
+      paths:
+      - path: /api/v1/users
+        backend:
+          serviceName: yourservice
+          servicePort: 8080

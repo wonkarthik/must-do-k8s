@@ -1,0 +1,63 @@
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cors
+  namespace: default
+  labels:
+    global: "true"
+disabled: false
+config:
+  origins:
+  - https://web.{{ .env }}.yourdomain.com
+  - https://api.{{ .env }}.yourdomain.com
+  methods:
+  - GET
+  - HEAD
+  - PUT
+  - PATCH
+  - POST
+  headers:
+  - Authorization
+  - Origin
+  - Content-Type
+plugin: cors
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: jwt
+  namespace: default
+  labels:
+    global: "false"
+disabled: false
+config:
+  claims_to_verify:
+  - exp
+  - nbf
+  key_claim_name: iss
+plugin: jwt
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: global-consumer
+  namespace: default
+username: GlobalConsumer
+custom_id: GlobalConsumer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongCredential
+metadata:
+  name: global-consumer-credentials
+  namespace: default
+consumerRef: global-consumer
+type: jwt
+config:
+  key: urn:yourdomain.com
+  rsa_public_key: |
+    -----BEGIN PUBLIC KEY-----
+    YOURKEY
+    -----END PUBLIC KEY-----
+  algorithm: RS512
+---
