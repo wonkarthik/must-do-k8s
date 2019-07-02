@@ -1,0 +1,33 @@
+There are 2 kinds of Volumes available in Kubernetes. AzureDisk and Azurefile.
+ AzureDisk maps to a vhd. 
+ AzureFile maps to a directory in an Azure Storage Account on a Fileshare.
+
+Kubernetes Persistent Storage
+Kubernetes has a concept called StorageClass. With StorageClasses administrators can offer Profiles regarding storage. For example a profile to store data on a HDD named slow-storage or a profile to store data on a SSD named fast-storage. The kind of storage is determined by the Provisioner. For Azure there are 2 kind of provisioners: AzureFile and AzureDisk.
+
+The big difference between AzureFile and AzureDisk is the AccessMode. There are 3 AccessModes.
+* ReadWriteOnce – the volume can be mounted as read-write by a single node
+* ReadOnlyMany – the volume can be mounted read-only by many nodes
+* ReadWriteMany – the volume can be mounted as read-write by many nodes
+
+AzureFile supports all three. AzureDisk supports ReadWriteOnce only.
+In the situation where a pod is configured to use a volume to write or read data to and is being restarted on a different host for whatever reason, you can’t use AzureDisk.
+
+With the use of AzureDisk a vhd is attached to the node. The size of the node is dependent on the number of attached vhd’s. As a general rule you can have twice as many attached disks as CPU cores.
+
+AzureFile uses SMB drives. Regarding performance is this not suitable to store the data of databases for example.
+
+If you have multiple Pods of the same image (multiple replicas) that form a group that work together and you want to mount a volume per Pod to write data to. You may want to use StateFul Set.
+
+As you can see all 3 StorageClasses in ACS are azure-disk type of storage.
+ **  There is a standard storage to store to HDD and a premium to store to SSD. 
+There is also 1 default storage. This one stores to HDD also and is marked as default StorageClass. It is possible to mark another StorageClass as default.
+
+
+ReferLinks:
+https://docs.microsoft.com/en-us/azure/aks/azure-disks-dynamic-pv
+https://kubernetes.io/docs/concepts/storage/storage-classes/
+https://pascalnaber.wordpress.com/2018/01/26/persistent-storage-and-volumes-using-kubernetes-on-azure-with-aks-or-azure-container-service/
+
+
+
