@@ -1,0 +1,36 @@
+
+
+Your private docker registry is ready to work at docker.YOURDOMAIN.com.
+
+Let’s test it. Push hello-world container to registry (on your computer).
+
+$ docker login docker.YOURDOMAIN.com
+User: admin
+Password: admin123
+Login Succeeded
+$ docker pull dockercloud/hello-world
+$ docker tag dockercloud/hello-world docker.YOURDOMAIN.com/dockercloud/hello-world:0.1
+$ docker push docker.YOURDOMAIN.com/dockercloud/hello-world:0.1
+The push refers to a repository [docker.YOURDOMAIN.com/dockercloud/hello-world:0.1]
+b0ffedf1c11d: Pushed
+...
+8539d1fe4fab: Pushed
+latest: digest: sha256:8d9d4a28486005a6aaf1e3a16abe68b4bd82dcfe2b8602b00bee3744099fc578 size: 1570
+
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-world
+
+Create secret in hello-world namespace.
+
+# kubectl create secret docker-registry 
+regsecret --docker-server=docker.YOURDOMAIN.com --docker-username=admin 
+--docker-password=admin123 --docker-email=<your-email> --namespace hello-world
+
+Deploy hello-world application and export it with NodePort. Do not forget to change YOURDOMAIN.com
+
+change the registry in /etc/docker/daemon.json
+
+{ "insecure-registries":["yoursite.com"] } 

@@ -1,0 +1,21 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: slow
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  zone: us-central1-a
+  fsType: ext4
+
+
+type: pd-standard or pd-ssd. Default: pd-ssd
+
+zone: GCE zone. If neither zone nor zones is specified, volumes are generally round-robin-ed across all active zones where Kubernetes cluster has a node. Note: zone and zones parameters must not be used at the same time.
+
+zones: a comma separated list of GCE zone(s). If neither zone nor zones is specified, volumes are generally round-robin-ed across all active zones where Kubernetes cluster has a node. Note: zone and zones parameters must not be used at the same time.
+
+
+ReadWriteOnce: The Volume can be mounted as read-write by a single node.
+ReadOnlyMany: The Volume can be mounted read-only by many nodes.
+ReadWriteMany: The Volume can be mounted as read-write by many nodes. PersistentVolumes that are backed by Compute Engine persistent disks don't support this access mode.

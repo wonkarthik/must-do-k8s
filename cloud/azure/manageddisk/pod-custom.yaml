@@ -1,0 +1,27 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: pod-custom-managed
+  labels:
+    name: storage
+spec:
+  nodeSelector:
+    disktype: managed
+  containers:
+  - image: busybox
+    name: az-0
+    command:
+    - "/bin/sh"
+    - "-c"
+    - while true; do echo $(date) >> /mnt/blobdisk/outfile; sleep 1; done
+    volumeMounts:
+    - name: blobdisk01
+      mountPath: "/mnt/blobdisk"
+  volumes:
+  - name: blobdisk01
+    azureDisk:
+      diskURI: "/subscriptions/[sub-id]/resourcegroups/[rg-name/]providers/microsoft.Compute/disks/[disk-name]"
+      diskName: myDisk
+      kind: Managed
+

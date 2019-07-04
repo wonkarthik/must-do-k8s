@@ -1,0 +1,33 @@
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: rc-shared-managed-slow-01
+  labels:
+    app: test-app-01
+spec:
+  replicas: 1
+  selector:
+    app: pod-uses-shared-slow-01
+  template:
+    metadata:
+      labels:
+        app: pod-uses-shared-slow-01
+    spec:
+      nodeSelector:
+        disktype: managed
+      containers:
+      - image: busybox
+        name: az-c-01
+        command:
+        - "/bin/sh"
+        - "-c"
+        - while true; do echo $(date) >> /mnt/managed/outfile; sleep 1; done
+        volumeMounts:
+        - name: managed01
+          mountPath: "/mnt/managed"
+      volumes:
+      - name: managed01
+        persistentVolumeClaim:
+          claimName: dd-managed-slow-01
+

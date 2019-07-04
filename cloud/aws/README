@@ -1,0 +1,16 @@
+Using Kubernetes Persistent volume to store persistent data
+
+(I) Create the sample volume by aws cli 
+
+# aws ec2 create-volume --availability-zone us-east-1a --size 20 --volume-type gp2
+This will create a volume in us-east-1a region. We need to note VolumeId once the volume is created.
+
+(II) create a persistent volume
+
+#  vi ebs-pv.yaml
+
+(III) create a persistent volume claim
+# vi ebs-pvc.yaml
+
+(IV) create application deployment
+# vi app-dep.yaml  

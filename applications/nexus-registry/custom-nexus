@@ -1,0 +1,36 @@
+Next, you need to create a dedicated Docker network for your registry:
+
+i# docker network create intranet
+Now, you can build the Nexus image and run the Nexus container:
+
+# docker build -t nexus-img .
+# docker run -d --name nexus \
+    -v /path/to/nexus-data:/nexus-data \
+    --restart unless-stopped \
+    --network intranet nexus-img
+
+Replace /path/to/nexus-data with your own location.
+
+## Running NGINX as Reverse Proxy for Nexus
+Create a directory named NGINX and add a Dockerfile with the following content:
+
+FROM nginx 
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
+
+Build and run the NGINX container:
+
+# docker build -t nginx-img .
+# docker run -d --publish 80:80 --name nginx \
+    --restart unless-stopped \
+    --network intranet \
+    nginx-img
+
+
+At this point, the Docker Registry is up and running, but you can’t access it from a Docker client because Docker requires the registry to run on SSL
+
+# docker login nexus.demo.com
+
+cred:  default credentials are admin/admin123
+
+REF: https://hub.docker.com/r/stefanprodan/nexus/

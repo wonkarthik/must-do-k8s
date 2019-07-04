@@ -1,0 +1,36 @@
+## Deploy hello-world application and export it with NodePort. Do not forget to change YOURDOMAIN.com.
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hello-world
+  namespace: hello-world
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: docker.YOURDOMAIN.com/dockercloud/hello-world:0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: regsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-service
+  namespace: hello-world
+spec:
+  ports:
+  - port: 80
+    nodePort: 30000
+  selector:
+    app: hello-world
+  type: NodePort
+

@@ -1,0 +1,14 @@
+apiVersion: v1
+metadata:
+name: test-ebs
+spec:
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: task-pv-claimr
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+         - mountPath: “/usr/share/nginx/html”
+           name: task-pv-storage

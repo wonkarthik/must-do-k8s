@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: test-pv
+  labels:
+    app: test-pv
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-pv
+        tier: frontend
+    spec:
+      containers:
+      - image: <your-repo>/<your-image-name>:latest
+        name: test-pv
+        imagePullPolicy: Always
+        env:
+        - name: APP_ENV
+          value: staging
+        - name: UNICORN_WORKER_PROCESSES
+          value: "2"
+        volumeMounts:
+        - name: test-volume
+          mountPath: "/<path-to-my-app>/shared/data"
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+        - name: registrypullsecret
+      volumes:
+      - name: test-volume
+        persistentVolumeClaim:
+          claimName: test-pvc
+
+
