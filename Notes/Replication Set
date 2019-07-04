@@ -11,7 +11,7 @@ This Relica Set that than the Replication Controller, is used by the Deployment
 Object.
 
 
-Deployments
+Deployments:
 
 A deployment declaration in Kubenetes allows you to do app deployments and updates.
 
