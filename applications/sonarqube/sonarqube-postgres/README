@@ -1,0 +1,7 @@
+Create PersistentVolumeClaims to store SonarQube plugin data
+
+AKS comes with built-in Storage Classes for HDD (default) and SSD (premium) storage:
+
+here We need to create 2 PVCs since SonarQube uses two locations to store data /opt/sonarqube/data/ and /opt/sonarqube/extensions
+
+check the storage class # kubectl get sc
