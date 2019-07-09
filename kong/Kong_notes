@@ -1,0 +1,201 @@
+
+What’s an API gateway?
+An API gateway is a programming service in front of an application programming interface (API) which filters the traffic. This front-end service is useful when you have a Microservice architecture pattern.
+
+
+
+[root@kubernetesmaster1 ~]# kubectl  cluster-info
+Kubernetes master is running at https://192.168.58.121:6443
+coredns is running at https://192.168.58.121:6443/api/v1/namespaces/kube-system/services/coredns:dns/proxy
+kubernetes-dashboard is running at https://192.168.58.121:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+[root@kubernetesmaster1 ~]#
+
+
+[root@kubernetesmaster1 ~]# git clone git@github.com:Kong/kong-dist-kubernetes.git
+[root@kubernetesmaster1 ~]# cd kong-dist-kubernetes
+
+There are different ways we can create Kong  i am using postgresdb setup
+
+[root@kubernetesmaster1 ~]# kubectl apply -f kong-namespace.yaml
+
+
+Use the postgres.yaml file from the repository to deploy a PostgreSQL Service and a ReplicationController in the cluster:
+
+[root@kubernetesmaster1 ~]# kubectl create -f postgres.yaml
+
+Use the kong-control-plane-postgres.yaml file from this repository to run required migrations and deploy Kong control plane node including the Kong Admin API:
+[root@kubernetesmaster1 ~]# kubectl -n kong apply -f kong-control-plane-postgres.yaml
+
+Use the kong-ingress-data-plane-postgres.yaml file from this repository to run the Kong data plane node
+
+[root@kubernetesmaster1 ~]# kubectl -n kong apply -f kong-ingress-data-plane-postgres.yaml
+Continue to Using Datastore Backed Kong
+
+[root@kubernetesmaster1 ~]# kubectl get all -n kong
+NAME                                           READY   STATUS    RESTARTS   AGE
+pod/kong-control-plane-6966c55cd6-s2xpc        1/1     Running   1          17h
+pod/kong-ingress-data-plane-586c969f6d-v9j82   1/1     Running   2          17h
+pod/nginx-cdb6b5b95-j7gtt                      1/1     Running   1          16h
+pod/postgres-dcbkm                             1/1     Running   1          17h
+
+NAME                             DESIRED   CURRENT   READY   AGE
+replicationcontroller/postgres   1         1         1       17h
+
+NAME                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                         AGE
+service/kong-control-plane        NodePort    10.233.7.84     <none>        8001:32659/TCP,443:31602/TCP    17h
+service/kong-ingress-data-plane   NodePort    10.233.3.37     <none>        8000:32742/TCP,8443:32714/TCP   17h
+service/nginx                     ClusterIP   10.233.48.208   <none>        8080/TCP                        16h
+service/postgres                  ClusterIP   10.233.32.175   <none>        5432/TCP                        17h
+
+NAME                                      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kong-control-plane        1         1         1            1           17h
+deployment.apps/kong-ingress-data-plane   1         1         1            1           17h
+deployment.apps/nginx                     1         1         1            1           16h
+
+NAME                                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/kong-control-plane-6966c55cd6        1         1         1       17h
+replicaset.apps/kong-ingress-data-plane-586c969f6d   1         1         1       17h
+replicaset.apps/nginx-cdb6b5b95                      1         1         1       16h
+[root@kubernetesmaster1 ~]#
+
+=========================================================================
+1. Configuring Service
+=========================================================================
+
+(I) Request to add your first Service (pointing to the Mockbin API) to Kong:
+
+[root@kubernetesmaster1 ~]# curl -i -X POST  --url http://192.168.58.121:32659/services/  --data 'name=example' --data 'url=http://mockbin.org'
+HTTP/1.1 201 Created
+Date: Thu, 27 Jun 2019 05:58:15 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 262
+
+{"host":"mockbin.org","created_at":1561615095,"connect_timeout":60000,"id":"b74c76be-79b8-432c-84d2-060c97c1d4b1","protocol":"http","name":"example","read_timeout":60000,"port":80,"path":null,"updated_at":1561615095,"retries":5,"write_timeout":60000,"tags":null}
+[root@kubernetesmaster1 ~]#
+
+(II) Add a Route for the Service
+[root@kubernetesmaster1 ~]# curl -i -X POST   --url http://192.168.58.121:32659/services/example/routes   --data 'hosts[]=example.com'         
+HTTP/1.1 201 Created
+Date: Thu, 27 Jun 2019 06:01:14 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 393
+
+{"id":"d358bf03-f786-407f-82b1-442d4d7afc01","tags":null,"paths":null,"destinations":null,"protocols":["http","https"],"created_at":1561615274,"snis":null,"hosts":["example.com"],"name":null,"preserve_host":false,"regex_priority":0,"strip_path":true,"sources":null,"updated_at":1561615274,"https_redirect_status_code":426,"service":{"id":"b74c76be-79b8-432c-84d2-060c97c1d4b1"},"methods":null}[root@kubernetesmaster1 ~]#
+[root@kubernetesmaster1 ~]#
+
+
+(III) Forward your requests through Kong
+
+[root@kubernetesmaster1 ~]# curl -i -X GET --url http://192.168.58.121:32659  --header 'Host: example.com'
+
+A successful response means Kong is now forwarding requests made to http://192.168.58.121:32659 to the url we configured in step #1, and is forwarding the response back to us. Kong knows to do this through the header defined in the above cURL request:
+
+==============================================================================
+2. Enabling Plugins
+==============================================================================
+ configure the key-auth plugin to add authentication to your Service. Prior to the addition of this plugin, all requests to your Service would be proxied upstream. Once you add and configure this plugin, only requests with the correct key(s) will be proxied - all other requests will be rejected by Kong, thus protecting your upstream service from unauthorized use.
+
+Note : check the Kong services are installed and working
+
+(I) Configure the key-auth plugin
+
+[root@kubernetesmaster1 ~]#  curl -i -X POST --url http://192.168.58.121:32659/services/example/plugins/  --data 'name=key-auth'
+HTTP/1.1 201 Created
+Date: Thu, 27 Jun 2019 06:10:57 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 365
+
+{"created_at":1561615857,"config":{"key_names":["apikey"],"run_on_preflight":true,"anonymous":null,"hide_credentials":false,"key_in_body":false},"id":"7ab017d8-d76e-4ec5-a2c4-f1d4c1af0a22","service":{"id":"b74c76be-79b8-432c-84d2-060c97c1d4b1"},"name":"key-auth","protocols":["http","https"],"enabled":true,"run_on":"first","consumer":null,"route":null,"tags":null}[root@kubernetesmaster1 ~]#
+[root@kubernetesmaster1 ~]#
+
+
+
+(II) Verify that the plugin is properly configured
+
+cURL request to verify that the key-auth plugin was properly configured on the Service:
+
+[root@kubernetesmaster1 ~]# curl -i -X GET --url http://192.168.58.121:32659 --header 'Host:example.com'
+HTTP/1.1 200 OK
+Date: Thu, 27 Jun 2019 06:13:50 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 5605
+
+{"plugins":{"enabled_in_cluster":["key-auth"],"available_on_server":{"correlation-id":true,"pre-function":true,"cors":true,"ldap-auth":true,"loggly":true,"hmac-auth":true,"zipkin":true,"request-size-limiting":true,"azure-functions":true,"request-transformer":true,"oauth2":true,"response-transformer":true,"ip-restriction":true,"statsd":true,"jwt":true,"proxy-cache":true,"basic-auth":true,"key-auth":true,"http-log":true,"datadog":true,"tcp-log":true,"post-function":true,"prometheus":true,"acl":true,"kubernetes-sidecar-injector":true,"syslog":true,"file-log":true,"udp-log":true,"response-ratelimiting":true,"aws-lambda":true,"bot-detection":true,"rate-limiting":true,"request-termination":true}},"tagline":"Welcome to kong","configuration":{"error_default_type":"text\/plain","admin_ssl_enabled":true,"proxy_access_log
+....
+[root@kubernetesmaster1 ~]#
+
+
+
+====================================================================================================
+3.Adding Consumers
+====================================================================================================
+ Consumers are associated to individuals using your Service, and can be used for tracking, access management, and more.
+
+Note: This section assumes you have enabled the key-auth plugin. If you haven’t, you can either enable the plugin or skip steps two and three.
+
+
+(I) Create a Consumer through the RESTful API
+
+Lets create a user named kc by issuing the following request:
+
+[root@kubernetesmaster1 ~]# curl -i -X POST --url http://192.168.58.121:32659/consumers/ --data "username=kc"
+HTTP/1.1 201 Created
+Date: Thu, 27 Jun 2019 06:21:25 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 114
+
+{"custom_id":null,"created_at":1561616485,"id":"c7cc3e43-ab59-4407-9684-442101a589c8","tags":null,"username":"kc"}
+[root@kubernetesmaster1 ~]#
+
+Note: Kong also accepts a custom_id parameter when creating consumers to associate a consumer with your existing user database
+
+(II) Provision key credentials for your Consumer
+Now, we can create a key for our recently created consumer Jason by issuing the following request:
+
+[root@kubernetesmaster1 ~]# curl -i -X POST --url http://192.168.58.121:32659/consumers/kc/key-auth/ --data 'key=netapp'
+HTTP/1.1 201 Created
+Date: Thu, 27 Jun 2019 06:23:51 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 141
+
+{"key":"netapp","created_at":1561616631,"consumer":{"id":"c7cc3e43-ab59-4407-9684-442101a589c8"},"id":"ccff30b9-1576-407e-b71b-65a47b374937"}[root@kubernetesmaster1 ~]#
+[root@kubernetesmaster1 ~]#
+
+(III) Verify that your Consumer credentials are valid
+
+We can now issue the following request to verify that the credentials of our Jason Consumer is valid:
+
+[root@kubernetesmaster1 ~]# curl -i -X GET --url http://192.168.58.121:32659 --header "Host: example.com" --header "apikey: netapp"
+HTTP/1.1 200 OK
+Date: Thu, 27 Jun 2019 06:26:05 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/1.2.0
+Content-Length: 5605
+
+{"plugins":{"enabled_in_cluster":["key-auth"],"available_on_server":{"correlation-id":true,"pre-function":true,"cors":true,"ldap-auth":true,"loggly":true,"hmac-auth":true,"zipkin":true,"request-size-limiting":true,"azure-functions":true,"request-transformer":true,"oauth2":true,"response-transformer":true,"ip-restriction":true,"statsd":true,"jwt":true,"proxy-cache":true,"basic-auth":true,"key-auth":true,"http-log":true,"datadog":true,"tcp-log":true,"post-function":true,"prometheus":true,"acl":true,"kubernetes-sidecar-injector":true,"syslog":true,"file-log":true,"udp-log":true,"response-ratelimiting":true,"aws-lambda":true,"bot-detection":true,"rate-limiting":true,"request-termination":true}},"tagline":"Welcome to kong","configuration":{"error_default_type":"text\/plain","admin_ssl_enabled":true,
+...
+
+[root@kubernetesmaster1 ~]#
+
