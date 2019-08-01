@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-home
+  labels:
+     app: jenkins
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+       storage: 4Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-home
+  labels:
+    app: jenkins
+spec:
+   storageClassName: manual
+   accessModes:
+    - ReadWriteOnce
+   capacity: 
+      storage: 4Gi
+   persistentVolumeReclaimPolicy: Recycle
+   hostPath:
+      path: "/var/jenkins"

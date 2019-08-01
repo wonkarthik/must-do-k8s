@@ -1,0 +1,29 @@
+# Default values for wordpress.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nfs:
+  server: NULL
+
+replicaCount:
+  mysql: 1
+  wordpress: 2
+
+image:
+  mysql:
+    repository: mysql
+    tag: 5.7
+  wordpress:
+    repository: wordpress
+    tag: latest
+
+service:
+  mysql:
+    name: wordpress-mysql
+    type: None
+    port: 3306
+  wordpress:
+    name: wordpress
+    type: NodePort
+    port: 80
+    nodePort: 31004

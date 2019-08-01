@@ -1,0 +1,60 @@
+# create a service for wordpress
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.wordpress.name }}
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: {{ .Values.service.wordpress.port }}
+      nodePort: {{ .Values.service.wordpress.nodePort }}
+  selector:
+    app: wordpress
+    tier: frontend
+  type: {{ .Values.service.wordpress.type }}
+
+
+
+---
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  replicas: {{ .Values.replicaCount.wordpress }}
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - image: {{ .Values.image.wordpress.repository }}:{{ .Values.image.wordpress.tag }}
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: wordpress-mysql
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: {{ .Values.service.wordpress.port }}
+          name: wordpress
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: "/var/www/html"
+      volumes:
+      - name: wordpress-persistent-storage
+        persistentVolumeClaim:
+          claimName: wordpress-persistent-storage

@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.mysql.name }}
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: {{ .Values.service.mysql.port }}
+  selector:
+    app: wordpress
+    tier: mysql
+  clusterIP: {{ .Values.service.mysql.type }}
+---
+apiVersion:  apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: wordpress
+spec:
+  replicas: {{ .Values.replicaCount.mysql }}
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mysql
+    spec:
+      containers:
+      - image: {{ .Values.image.mysql.repository }}:{{ .Values.image.mysql.tag }}
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: {{ .Values.service.mysql.port }}
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: "/var/lib/mysql"
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-persistent-storage
