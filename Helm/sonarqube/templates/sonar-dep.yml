@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sonar-deployment
+  labels:
+     app: sonar-deployment
+spec:
+  replicas: {{ .Values.replicaCount.sonarqube }} 
+  template:
+    metadata:
+      labels:
+         app: sonar-deployment
+    spec:
+      containers:
+      - name: sonarqube
+        image: {{ .Values.image.sonarqube.repository }}:{{ .Values.image.sonarqube.tag }}
+        ports:
+        - name: sonarqube
+          containerPort: {{ .Values.service.sonarqube.port }} 
+        env:
+        - name: SONARQUBE_JDBC_USERNAME
+          value: sonar
+        - name: SONARQUBE_JDBC_PASSWORD
+          value: sonar
+        - name: SONARQUBE_JDBC_URL
+          value: jdbc:mysql://sonar-mysql:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
+        volumeMounts:
+         - name: sonarqube-extensions
+           mountPath: /opt/sonarqube/extensions
+         - name: sonarqube-data
+           mountPath: /opt/sonarqube/data
+      volumes:
+        - name: sonarqube-extensions
+          persistentVolumeClaim:
+             claimName: sonar-ext
+        - name: sonarqube-data
+          persistentVolumeClaim:
+              claimName: sonar-data
+      
+
+
+
+
+
+
+
+

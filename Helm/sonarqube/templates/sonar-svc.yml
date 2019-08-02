@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.mysql.name }}
+  labels:
+     app: sonar-mysql-deployment
+spec:
+  ports:
+    - name: mysql
+      port: {{ .Values.service.mysql.port }}
+  selector:
+    app: sonar-mysql-deployment
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+   name: {{ .Values.service.sonarqube.name }}
+   labels:
+     name: sonar-svc
+spec:
+   ports:
+   - protocol: TCP
+     nodePort: {{ .Values.service.sonarqube.nodePort }}
+     port: {{ .Values.service.sonarqube.port }}
+     targetPort: {{ .Values.service.sonarqube.targetPort }}
+   selector:
+      app: sonar-deployment
+   type: {{ .Values.service.sonarqube.type }}

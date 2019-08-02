@@ -1,0 +1,93 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-data
+  labels:
+     app: sonar-deployment
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+     requests:
+        storage: 4Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+   name: sonar-data
+   labels:
+       app: sonar-deployment
+spec:
+   storageClass: manual
+   accessModes: 
+      - ReadWriteOnce
+   capacity:
+      storage: 4Gi
+   PersistentVolumeReclaimPolicy: Recycle
+   hostPath:
+      path: /opt/data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-ext
+  labels:
+      app: sonar-deployment
+spec:
+   storageClassName: manual
+   accessModes:
+     - ReadWriteOnce
+   resources:
+      requests:
+       storage: 4Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sonar-ext
+  labels:
+     app: sonar-deployment
+spec:
+  storageClassName: manual
+  accessModes:
+     - ReadWriteOnce
+  capacity:
+    storage: 4Gi
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+     path: "/opt/extension"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: 
+    name: mysql
+    labels:
+       app: sonar-mysql-deployment
+spec:
+   storageClassName: manual
+   accessModes:
+     - ReadWriteOnce
+   resources:
+     requests:
+      storage: 4Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: mysql
+    labels:
+        app: sonar-mysql-deployment
+spec:
+   storageClassName: manual
+   accessModes: 
+     - ReadWriteOnce
+   capacity:
+     storage: 5Gi
+   persistentVolumeReclaimPolicy: Recycle
+   hostPath:
+       path: "/opt/mysql"

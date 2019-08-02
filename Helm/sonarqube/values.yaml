@@ -1,0 +1,27 @@
+# Default values for sonarqube.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 
+ mysql: 1
+ sonarqube: 1
+
+image:
+ mysql:
+  repository: mysql
+  tag: 5.7
+ sonarqube:
+   repository: sonarqube
+   tag: 6.5
+
+service:
+  mysql:
+    name: mysql-sonar
+    type: None
+    port: 3306
+  sonarqube:
+    name: sonarqube
+    type: NodePort
+    port: 80
+    targetPort: 9000
+    nodePort: 31005
