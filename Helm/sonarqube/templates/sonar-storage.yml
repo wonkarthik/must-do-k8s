@@ -21,12 +21,12 @@ metadata:
    labels:
        app: sonar-deployment
 spec:
-   storageClass: manual
+   storageClassName: manual
    accessModes: 
       - ReadWriteOnce
    capacity:
       storage: 4Gi
-   PersistentVolumeReclaimPolicy: Recycle
+   persistentVolumeReclaimPolicy: Recycle
    hostPath:
       path: /opt/data
 
