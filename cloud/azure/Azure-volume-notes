@@ -1,5 +1,5 @@
 There are 2 kinds of Volumes available in Kubernetes. AzureDisk and Azurefile.
- AzureDisk maps to a vhd. 
+ AzureDisk maps to a vhd
  AzureFile maps to a directory in an Azure Storage Account on a Fileshare.
 
 Kubernetes Persistent Storage
