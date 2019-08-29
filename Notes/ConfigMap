@@ -1,5 +1,5 @@
 
-Configuration parameters that are not secret can be put in a ConfigMap.
+Configuration parameters that are not secret can be put in a ConfigMap
 
 Input is key value pairs
 
