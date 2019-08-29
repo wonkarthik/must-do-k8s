@@ -1,4 +1,4 @@
-HEALTHCHECKS
+HEALTHCHECKS :
 
 If the app malfunctions, the pod and container can still run, the application might not work anymore.
 
