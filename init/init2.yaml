@@ -1,0 +1,65 @@
+# Apache HTTP Server
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+labels:
+    app: init-container-example-1
+name: init-container-example-1
+spec:
+replicas: 1
+selector:
+    matchLabels:
+    app: init-container-example-1
+template:
+    metadata:
+    labels:
+        app: init-container-example-1
+    spec:   
+    initContainers:
+    - image: busybox:1.31
+        name: download-stopwords-txt
+        command: 
+        - sh
+        - -c
+        - |
+            #!/usr/bin/env bash -e
+            mkdir -p /usr/local/apache2/htdocs
+            wget -O /usr/local/apache2/htdocs/index.html \
+            "https://gist.githubusercontent.com/sebleier/554280/\ 
+            raw/7e0e4a1ce04c2bb7bd41089c9821dbcf6d0c786c/\
+            NLTK's%2520list%2520of%2520english%2520stopwords"
+        volumeMounts:
+        - mountPath: /usr/local/apache2/htdocs
+            name: shared-folder    
+    containers:     
+    - image: httpd:2.4
+        imagePullPolicy: Always
+        name: httpd       
+        resources:
+        requests:
+            memory: 50Mi
+            cpu: 0.1
+        limits:
+            memory: 50Mi
+            cpu: 0.1
+        volumeMounts:
+        - mountPath: /usr/local/apache2/htdocs
+            name: shared-folder
+    volumes:
+        - name: shared-folder
+        emptyDir: {}
+---
+# Service to acces via NodePort
+apiVersion: v1
+kind: Service
+metadata:
+name: init-container-example-1-nodeport
+spec:
+ports:
+    - name: httptcp80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+selector:
+    app: init-container-example-1
+type: NodePort

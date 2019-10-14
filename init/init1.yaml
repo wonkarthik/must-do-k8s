@@ -1,0 +1,49 @@
+# Apache HTTP Server
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+labels:
+    app: init-container-example-1
+name: init-container-example-1
+spec:
+replicas: 1
+selector:
+    matchLabels:
+    app: init-container-example-1
+template:
+    metadata:
+    labels:
+        app: init-container-example-1
+    spec:      
+    containers:     
+    - image: httpd:2.4
+        imagePullPolicy: Always
+        name: httpd       
+        resources:
+        requests:
+            memory: 50Mi
+            cpu: 0.1
+        limits:
+            memory: 50Mi
+            cpu: 0.1
+        volumeMounts:
+        - mountPath: /srv
+            name: shared-folder
+    volumes:
+        - name: shared-folder
+        emptyDir: {}
+---
+# Service to acces via NodePort
+apiVersion: v1
+kind: Service
+metadata:
+name: init-container-example-1-nodeport
+spec:
+ports:
+    - name: httptcp80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+selector:
+    app: init-container-example-1
+type: NodePort
