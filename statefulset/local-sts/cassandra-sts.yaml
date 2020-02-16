@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cassandra-dev
+  labels:
+    app: cassandra-dev
+    pod: cassandra
+spec:
+  serviceName: cassandra-dev
+  replicas: 3                             
+  selector:
+    matchLabels:
+      app: cassandra-dev
+      pod: cassandra
+  template:
+    metadata:
+      labels:
+        app: cassandra-dev
+        pod: cassandra
+    spec:
+      hostNetwork: true                  
+      hostAliases:
+      - ip: "192.168.0.2"
+        hostnames:
+        - "server-2"
+      - ip: "192.168.0.7"
+        hostnames:
+        - "server-7"
+      - ip: "192.168.0.8"
+        hostnames:
+        - "server-8"
+      dnsPolicy: ClusterFirstWithHostNet
+      affinity:
+        podAntiAffinity:                    
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - cassandra-dev
+              - key: pod
+                operator: In
+                values:
+                - cassandra
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 1800
+      containers:
+      - name: cassandra
+        image: cassandra:3.11
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7000
+          hostPort: 7000
+          name: intra-node
+        - containerPort: 7001
+          hostPort: 7001
+          name: tls-intra-node
+        - containerPort: 7199
+          hostPort: 7199
+          name: jmx
+        - containerPort: 9042
+          hostPort: 9042
+          name: cql
+        resources:
+          limits:
+            cpu: 2.0
+            memory: 10Gi
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+        lifecycle:                          
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - nodetool drain
+        env:                                
+          - name: CASSANDRA_SEEDS
+            value: "cassandra-dev-0.cassandra-dev.infra.svc.cluster.local"
+          - name: CASSANDRA_CLUSTER_NAME
+            value: "Test Cluster"
+          - name: CASSANDRA_DC
+            value: "Test DC"
+          - name: CASSANDRA_RACK
+            value: "Test Rack"
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - 'if [[ $(nodetool status | grep $POD_IP) == *"UN"* ]]; then exit 0; else exit 1; fi'
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:                      
+        - mountPath: /var/lib/cassandra
+          name: cassandra-dev-local-volume
+  volumeClaimTemplates:                    
+  - metadata:
+      name: cassandra-dev-local-volume
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Gi
+      storageClassName: cassandra-local-storage

@@ -1,0 +1,10 @@
+ Bootstrapping with InitContainers
+This series deals with the container orchestration framework Kubernetes (k8s) and the bootstrapping of containers within a deployment. Many users quickly come to the point when using k8s, where simply configuring using ConfigMaps is no longer practical, because the initial state of a deployment can no longer be defined using only key-value pairs. Also, large amounts of data for initialization do not want to be packaged in images and inflate a Docker Registry only unnecessarily. Particularly in the area of ​​the CI / CD workflow, such amounts of data can quickly lead to problems and slow or hinder ongoing processes. K8s offers the so-called InitContainers for this purpose. In what follows, how they can be used to create complex,
+
+What are InitContainers?
+InitContainers are containers that first run in a pod and prepare the pod environment. Only when all InitContainers have completed successfully and in the defined sequence, the remaining containers of the pod start. As a reminder, a pod in k8s is a logical shell for a lot of containers. Put simply, this case behaves like a virtual server . All containers run in this shell as individual processes, but use the same network, file system, and same environment variables. An InitContainer is an upstream process that can manipulate and prepare this shell. This state is maintained even after its lifetime until all other regular containers have been terminated and / or the pod is restarted.
+
+How to use InitContainer?
+A brief example demonstrates the use of an InitContainer to download a file from the Internet and place it in a predefined location.
+
+The following code serves as our starting point

@@ -1,7 +1,7 @@
 
-Configuration parameters that are not secret can be put in a ConfigMap.
+Configuration parameters that are not secret can be put in a ConfigMap
 
-Input is key value pairs
+Input is key value pairs.
 
 The ConfigMap key-value pairs can then be read by the app using:
 

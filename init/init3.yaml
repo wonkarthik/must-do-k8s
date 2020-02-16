@@ -1,0 +1,65 @@
+# Apache HTTP Server
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+labels:
+    app: init-container-example-1
+name: init-container-example-1
+spec:
+replicas: 1
+selector:
+    matchLabels:
+    app: init-container-example-1
+template:
+    metadata:
+    labels:
+        app: init-container-example-1
+    spec:   
+    initContainers:
+    - image: alpine/git:1.0.7
+        name: clone-stopwords-and-copy
+        command: 
+        - sh
+        - -c
+        - |
+            #!/usr/bin/env bash -e
+            mkdir -p /usr/local/apache2/htdocs
+            git clone https://github.com/stopwords-iso/stopwords-en.git
+            cd stopwords-en
+            git checkout v0.3.0
+            cp stopwords-en.txt /usr/local/apache2/htdocs/index.html
+        volumeMounts:
+        - mountPath: /usr/local/apache2/htdocs
+            name: shared-folder    
+    containers:     
+    - image: httpd:2.4
+        imagePullPolicy: Always
+        name: httpd       
+        resources:
+        requests:
+            memory: 50Mi
+            cpu: 0.1
+        limits:
+            memory: 50Mi
+            cpu: 0.1
+        volumeMounts:
+        - mountPath: /usr/local/apache2/htdocs
+            name: shared-folder
+    volumes:
+        - name: shared-folder
+        emptyDir: {}
+---
+# Service to acces via NodePort
+apiVersion: v1
+kind: Service
+metadata:
+name: init-container-example-1-nodeport
+spec:
+ports:
+    - name: httptcp80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+selector:
+    app: init-container-example-1
+type: NodePort
