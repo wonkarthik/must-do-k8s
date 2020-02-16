@@ -1,5 +1,5 @@
  Helm will have created a number of files and directories.
-
+```sh
  Chart.yaml          - the metadata for your Helm Chart.
  values.yaml         - values that can be used as variables in your templates.
  templates/*.yaml    - Example Kubernetes manifests.
@@ -26,11 +26,11 @@
   helm serve
   helm search local
   helm install --name jenkins-blueocean2 local/jenkins-blueocean --set service.type=NodePort
-  
+  ```
 
 
-General Usage
-
+### General Usage
+```sh
   helm list --all
   helm repo (list|add|update)
   helm search
@@ -50,4 +50,4 @@ General Usage
   helm get manifest <deployment-name> # prints out all of the Kubernetes resources that were uploaded to the server
   helm install --debug --dry-run <deployment-name> # it will return the rendered template to you so you can see the output
 
-
+```
