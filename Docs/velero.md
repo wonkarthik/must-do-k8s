@@ -19,7 +19,6 @@ sudo mv velero-v1.0.0-linux-amd64/velero /usr/local/bin/
 rm -rf velero*
 
 ```
-
 ### Create credentials file (Needed for velero initialization)
 ```
 cat <<EOF>> minio.credentials
