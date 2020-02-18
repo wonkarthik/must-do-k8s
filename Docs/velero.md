@@ -27,7 +27,6 @@ aws_access_key_id=minio
 aws_secret_access_key=minio123
 EOF
 ```
-
 ### Install Velero in the Kubernetes Cluster
 ```
 velero install \
