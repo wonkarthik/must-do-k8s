@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: docker-maintenance
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: docker
+            image: docker
+            command: ['sh', '-c', 'docker system prune -a -f']
+            volumeMounts:
+            - name: dockersock
+              mountPath: "/var/run/docker.sock"
+          volumes:
+          - name: dockersock
+            hostPath:
+              path: /var/run/docker.sock  
+          restartPolicy: Never # Next run will (may) fix it
+        

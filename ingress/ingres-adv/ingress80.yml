@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ssldemo-ingress-nossl
+  namespace: development
+  annotations:
+    kubernetes.io/ingress.class: "public" # Just in case there are other ingress controllers
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: nossldemo.dev.aahg.ot
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ssldemo-svc
+          servicePort: http-ssldemo

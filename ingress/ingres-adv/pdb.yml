@@ -1,0 +1,11 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: ssldemo-pdb
+  namespace: development
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ssldemo
+      version: "0.1"

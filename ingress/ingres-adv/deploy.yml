@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssldemo-dep
+  namespace: development
+  labels:
+    app: ssldemo
+spec:
+  selector:
+    matchLabels:
+      app: ssldemo
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ssldemo
+        version: "0.1"
+    spec:
+      #serviceAccountName: ssldemo-sa
+      containers:
+        - image: k8s.gcr.io/echoserver:1.10
+          # - image: mcr.microsoft.com/dotnet/core/samples:aspnetapp
+          # - image: r.j3ss.co/party-clippy
+          name: ssldemo
+          securityContext:
+            #runAsUser: 65534 # 1000=root, 65534=nobody
+            #runAsGroup: 3000
+            #fsGroup: 2000
+            #runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            privileged: false
+            #readOnlyRootFilesystem: true
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: VSTS_AGENT
+              value: $(POD_NAME)-agent
+          resources:
+            requests:
+              cpu: "20m"
+              memory: "55M"
+            limits:
+              cpu: "100m"
+              memory: "80M"
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 8080
+            timeoutSeconds: 5
+            initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 8080
+            timeoutSeconds: 5
+            initialDelaySeconds: 60
+          ports:
+            - containerPort: 8080
+              name: http-main
+      restartPolicy: Always

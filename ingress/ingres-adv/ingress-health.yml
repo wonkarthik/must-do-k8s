@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ssldemo-ingress-health
+  namespace: development
+  annotations:
+    # IP whitelisting
+    nginx.ingress.kubernetes.io/whitelist-source-range: 13.95.231.11,10.234.0.0/16,192.168.0.0/16
+
+    # Querystring rewrite naar /
+    #ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /health$2
+    #nginx.ingress.kubernetes.io/app-root: /health
+spec:
+  tls:
+  - hosts:
+    - ssldemo.dev.aahg.ot
+    secretName: dev-ssl
+  rules:
+  - host: ssldemo.dev.aahg.ot
+    http:
+      paths:
+      - path: /gezondheid/proxy.aspx(/|$)(.*)
+        backend:
+          serviceName: ssldemo-svc
+          servicePort: http-ssldemo

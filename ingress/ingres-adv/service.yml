@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  ssldemo-svc
+  namespace: development
+spec:
+  selector:
+    app:  ssldemo
+    #version: "0.1" # No version filter, should always match newer versions on upgrades
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http-main
+      name: http-ssldemo

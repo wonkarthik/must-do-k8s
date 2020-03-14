@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ssldemo-ingress-agic
+  namespace: development
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+
+    # Querystring rewrite naar /
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - ssldemo.dev.aahg.ot
+    secretName: dev-ssl
+  rules:
+  - host: ssldemo.dev.aahg.ot
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ssldemo-svc
+          servicePort: http-ssldemo
