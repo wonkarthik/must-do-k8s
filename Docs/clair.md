@@ -1,0 +1,2 @@
+# Clair is an Open Source project from CoreOS, designed to scan Docker Images for Security Vulnerabilities.
+# Clair scans Docker Images from the Docker Hub and private registries for known Vulnerabilities.
