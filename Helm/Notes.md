@@ -49,5 +49,11 @@
   helm dep up <chart-name> # update dependency
   helm get manifest <deployment-name> # prints out all of the Kubernetes resources that were uploaded to the server
   helm install --debug --dry-run <deployment-name> # it will return the rendered template to you so you can see the output
+  helm lint ./rabbitmq-server/ --debug
+  helm fetch --untar stable/rabbitmq
+  here rabbitmq is release name 
+  helm ls  
+  helm upgrade rabbitmq .
 
+  helm rollback rabbitmq 1
 ```
